@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.hezhujun.shopping.dao.RegularMapper" >
+  <resultMap id="BaseResultMap" type="com.hezhujun.shopping.model.Regular" >
+    <id column="id" property="id" jdbcType="INTEGER" />
+    <result column="discount" property="discount" jdbcType="DECIMAL" />
+  </resultMap>
+  <sql id="Base_Column_List" >
+    id, discount
+  </sql>
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Integer" >
+    select 
+    <include refid="Base_Column_List" />
+    from regular
+    where id = #{id,jdbcType=INTEGER}
+  </select>
+  <select id="selectByDiscount" resultMap="BaseResultMap" parameterType="java.math.BigDecimal">
+    select
+    <include refid="Base_Column_List" />
+    from regular
+    where discount = #{discount,jdbcType=DECIMAL}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer" >
+    delete from regular
+    where id = #{id,jdbcType=INTEGER}
+  </delete>
+  <insert id="insert" parameterType="com.hezhujun.shopping.model.Regular" keyColumn="id" keyProperty="id" useGeneratedKeys="true">
+    insert into regular (discount)
+    values (#{discount,jdbcType=DECIMAL})
+  </insert>
+  <insert id="insertSelective" parameterType="com.hezhujun.shopping.model.Regular" keyColumn="id" keyProperty="id" useGeneratedKeys="true">
+    insert into regular
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="discount != null" >
+        discount,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="discount != null" >
+        #{discount,jdbcType=DECIMAL},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.hezhujun.shopping.model.Regular" >
+    update regular
+    <set >
+      <if test="discount != null" >
+        discount = #{discount,jdbcType=DECIMAL},
+      </if>
+    </set>
+    where id = #{id,jdbcType=INTEGER}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.hezhujun.shopping.model.Regular" >
+    update regular
+    set discount = #{discount,jdbcType=DECIMAL}
+    where id = #{id,jdbcType=INTEGER}
+  </update>
+</mapper>

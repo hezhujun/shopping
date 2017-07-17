@@ -1,0 +1,325 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.hezhujun.shopping.dao.OrderMapper">
+    <resultMap id="BaseResultMap" type="com.hezhujun.shopping.model.Order">
+        <id column="order_id" property="id" jdbcType="INTEGER"/>
+        <result column="order_time" property="time" jdbcType="TIMESTAMP"/>
+        <result column="order_price" property="price" jdbcType="DECIMAL"/>
+        <result column="order_state" property="state" jdbcType="VARCHAR"/>
+        <result column="order_user_remark" property="userRemark" jdbcType="VARCHAR"/>
+        <result column="order_businessman_remark" property="businessmanRemark" jdbcType="VARCHAR"/>
+        <result column="order_success" property="success" jdbcType="TINYINT"/>
+        <result column="order_addressee" property="addressee" jdbcType="VARCHAR"/>
+        <result column="order_phone" property="phone" jdbcType="VARCHAR"/>
+        <result column="order_address" property="address" jdbcType="VARCHAR"/>
+        <association property="user" javaType="com.hezhujun.shopping.model.User">
+            <id column="user_id" property="id" jdbcType="INTEGER"/>
+            <result column="user_username" property="username" jdbcType="VARCHAR"/>
+            <result column="user_password" property="password" jdbcType="VARCHAR"/>
+            <result column="user_name" property="name" jdbcType="VARCHAR"/>
+            <result column="user_phone" property="phone" jdbcType="VARCHAR"/>
+            <result column="user_address" property="address" jdbcType="VARCHAR"/>
+            <association column="role_id" property="role" javaType="com.hezhujun.shopping.model.Role">
+                <id column="role_id" property="id" jdbcType="INTEGER"/>
+                <result column="role_name" property="roleName" jdbcType="VARCHAR"/>
+            </association>
+        </association>
+        <association property="product" javaType="com.hezhujun.shopping.model.Product">
+            <id column="product_id" property="id" jdbcType="INTEGER"/>
+            <result column="product_name" property="name" jdbcType="VARCHAR"/>
+            <result column="product_description" property="description" jdbcType="VARCHAR"/>
+            <result column="product_price" property="price" jdbcType="DECIMAL"/>
+            <result column="product_img_url" property="imgUrl" jdbcType="VARCHAR"/>
+            <association column="category_id" property="category" javaType="com.hezhujun.shopping.model.Category">
+                <id column="category_id" property="id" jdbcType="INTEGER"/>
+                <result column="category_name" property="name" jdbcType="VARCHAR"/>
+            </association>
+            <association column="repertory_id" property="repertory" javaType="com.hezhujun.shopping.model.Repertory">
+                <id column="repertory_id" property="id" jdbcType="INTEGER"/>
+                <result column="repertory_count" property="count" jdbcType="INTEGER"/>
+            </association>
+            <association column="regular_id" property="regular" javaType="com.hezhujun.shopping.model.Regular">
+                <id column="repertory_id" property="id" jdbcType="INTEGER"/>
+                <result column="regular_discount" property="discount" jdbcType="DECIMAL"/>
+            </association>
+        </association>
+    </resultMap>
+    <sql id="Base_Column_List">
+    `order`.id as order_id,
+`order`.time as order_time,
+`order`.price as order_price,
+`order`.state as order_state,
+`order`.user_id as user_id,
+`order`.product_id as product_id,
+`order`.user_remark as order_user_remark,
+`order`.businessman_remark as businessman_remakr,
+`order`.success as order_success,
+`order`.addressee as order_addressee,
+`order`.phone as order_phone,
+`order`.address as order_address,
+`user`.username as user_username,
+`user`.`password` as user_password,
+`user`.role_id as role_id,
+`user`.`name` as user_name,
+`user`.phone as user_phone,
+`user`.address as user_address,
+product.`name` as product_name,
+product.description as product_description,
+product.price as product_price,
+product.img_url as product_img_url,
+product.category_id as category_id,
+product.repertory_id as repertory_id,
+product.regular_id  as regular_id,
+category.`name` as category_name,
+regular.discount as regular_discount,
+repertory.count as repertory_count,
+role.role_name as role_name
+  </sql>
+    <select id="count" resultType="java.lang.Integer">
+        select count(id) from `order`
+        <where>
+            <!-- 注意判断表达式，直接写参数名 -->
+            <if test="orderId != null">
+                order.id=#{orderId, jdbcType=INTEGER}
+            </if>
+            <if test="userId != null">
+                and user_id=#{userId, jdbcType=INTEGER}
+            </if>
+            <if test="state != null">
+                and state=#{state, jdbcType=VARCHAR}
+            </if>
+            <if test="from != null">
+                and time <![CDATA[>=]]> #{from, jdbcType=TIMESTAMP}
+            </if>
+            <if test="to != null">
+                and time <![CDATA[<=]]> #{to, jdbcType=TIMESTAMP}
+            </if>
+        </where>
+    </select>
+    <select id="countOfDone" resultType="java.lang.Integer">
+        select count(id) from `order`
+        where state != '等待商家确认'
+    </select>
+    <select id="select" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        FROM
+        `order`
+        INNER JOIN `user` ON `order`.user_id = `user`.id
+        INNER JOIN product ON `order`.product_id = product.id
+        INNER JOIN category ON product.category_id = category.id
+        INNER JOIN repertory ON product.repertory_id = repertory.id
+        INNER JOIN regular ON product.regular_id = regular.id
+        INNER JOIN role ON `user`.role_id = role.id
+        <where>
+            <!-- 注意判断表达式，直接写参数名 -->
+            <if test="orderId != null">
+                order.id=#{orderId, jdbcType=INTEGER}
+            </if>
+            <if test="userId != null">
+                and user_id=#{userId, jdbcType=INTEGER}
+            </if>
+            <if test="state != null">
+                and state=#{state, jdbcType=VARCHAR}
+            </if>
+            <if test="from != null">
+                and time <![CDATA[>=]]> #{from, jdbcType=TIMESTAMP}
+            </if>
+            <if test="to != null">
+                and time <![CDATA[<=]]> #{to, jdbcType=TIMESTAMP}
+            </if>
+        </where>
+        order by order_id DESC
+        limit #{offset, jdbcType=INTEGER}, #{rows, jdbcType=INTEGER}
+    </select>
+    <select id="done" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        FROM
+        `order`
+        INNER JOIN `user` ON `order`.user_id = `user`.id
+        INNER JOIN product ON `order`.product_id = product.id
+        INNER JOIN category ON product.category_id = category.id
+        INNER JOIN repertory ON product.repertory_id = repertory.id
+        INNER JOIN regular ON product.regular_id = regular.id
+        INNER JOIN role ON `user`.role_id = role.id
+        where order.state != '等待商家确认'
+        order by order_id DESC
+        limit #{offset, jdbcType=INTEGER}, #{rows, jdbcType=INTEGER}
+    </select>
+    <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Integer">
+        select
+        <include refid="Base_Column_List"/>
+        FROM
+        `order`
+        INNER JOIN `user` ON `order`.user_id = `user`.id
+        INNER JOIN product ON `order`.product_id = product.id
+        INNER JOIN category ON product.category_id = category.id
+        INNER JOIN repertory ON product.repertory_id = repertory.id
+        INNER JOIN regular ON product.regular_id = regular.id
+        INNER JOIN role ON `user`.role_id = role.id
+        where order.id = #{id, jdbcType=INTEGER}
+    </select>
+    <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer">
+    delete from order
+    where id = #{id,jdbcType=INTEGER}
+  </delete>
+    <insert id="insert" parameterType="com.hezhujun.shopping.model.Order" keyColumn="id" keyProperty="id"
+            useGeneratedKeys="true">
+    insert into `order` (time, price,
+      state, user_id, product_id, 
+      user_remark, businessman_remark, success, 
+      addressee, phone, address
+      )
+    values (#{time,jdbcType=TIMESTAMP}, #{price,jdbcType=DECIMAL},
+      #{state,jdbcType=VARCHAR}, #{user.id,jdbcType=INTEGER}, #{product.id,jdbcType=INTEGER},
+      #{userRemark,jdbcType=VARCHAR}, #{businessmanRemark,jdbcType=VARCHAR}, #{success,jdbcType=TINYINT}, 
+      #{addressee,jdbcType=VARCHAR}, #{phone,jdbcType=VARCHAR}, #{address,jdbcType=VARCHAR}
+      )
+  </insert>
+    <insert id="insertSelective" parameterType="com.hezhujun.shopping.model.Order" keyColumn="id" keyProperty="id"
+            useGeneratedKeys="true">
+        insert into `order`
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="time != null">
+                time,
+            </if>
+            <if test="price != null">
+                price,
+            </if>
+            <if test="state != null">
+                state,
+            </if>
+            <if test="user.id != null">
+                user_id,
+            </if>
+            <if test="product.id != null">
+                product_id,
+            </if>
+            <if test="userRemark != null">
+                user_remark,
+            </if>
+            <if test="businessmanRemark != null">
+                businessman_remark,
+            </if>
+            <if test="success != null">
+                success,
+            </if>
+            <if test="addressee != null">
+                addressee,
+            </if>
+            <if test="phone != null">
+                phone,
+            </if>
+            <if test="address != null">
+                address,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="time != null">
+                #{time,jdbcType=TIMESTAMP},
+            </if>
+            <if test="price != null">
+                #{price,jdbcType=DECIMAL},
+            </if>
+            <if test="state != null">
+                #{state,jdbcType=VARCHAR},
+            </if>
+            <if test="user.id != null">
+                #{user.id,jdbcType=INTEGER},
+            </if>
+            <if test="product.id != null">
+                #{product.id,jdbcType=INTEGER},
+            </if>
+            <if test="userRemark != null">
+                #{userRemark,jdbcType=VARCHAR},
+            </if>
+            <if test="businessmanRemark != null">
+                #{businessmanRemark,jdbcType=VARCHAR},
+            </if>
+            <if test="success != null">
+                #{success,jdbcType=TINYINT},
+            </if>
+            <if test="addressee != null">
+                #{addressee,jdbcType=VARCHAR},
+            </if>
+            <if test="phone != null">
+                #{phone,jdbcType=VARCHAR},
+            </if>
+            <if test="address != null">
+                #{address,jdbcType=VARCHAR},
+            </if>
+        </trim>
+    </insert>
+    <update id="updateByPrimaryKeySelective" parameterType="com.hezhujun.shopping.model.Order">
+        update `order`
+        <set>
+            <if test="time != null">
+                time = DATE_FORMAT(#{time,jdbcType=TIMESTAMP},"%Y-%m-%d %H:%i:%s"),
+            </if>
+            <if test="price != null">
+                price = #{price,jdbcType=DECIMAL},
+            </if>
+            <if test="state != null">
+                state = #{state,jdbcType=VARCHAR},
+            </if>
+            <if test="user.id != null">
+                user_id = #{user.id,jdbcType=INTEGER},
+            </if>
+            <if test="product.id != null">
+                product_id = #{product.id,jdbcType=INTEGER},
+            </if>
+            <if test="userRemark != null">
+                user_remark = #{userRemark,jdbcType=VARCHAR},
+            </if>
+            <if test="businessmanRemark != null">
+                businessman_remark = #{businessmanRemark,jdbcType=VARCHAR},
+            </if>
+            <if test="success != null">
+                success = #{success,jdbcType=TINYINT},
+            </if>
+            <if test="addressee != null">
+                addressee = #{addressee,jdbcType=VARCHAR},
+            </if>
+            <if test="phone != null">
+                phone = #{phone,jdbcType=VARCHAR},
+            </if>
+            <if test="address != null">
+                address = #{address,jdbcType=VARCHAR},
+            </if>
+        </set>
+        where id = #{id,jdbcType=INTEGER}
+    </update>
+    <update id="updateByPrimaryKey" parameterType="com.hezhujun.shopping.model.Order">
+    update `order`
+    set time = DATE_FORMAT(#{time,jdbcType=TIMESTAMP},"%Y-%m-%d %H:%i:%s"),
+      price = #{price,jdbcType=DECIMAL},
+      state = #{state,jdbcType=VARCHAR},
+      user_id = #{user.id,jdbcType=INTEGER},
+      product_id = #{product.id,jdbcType=INTEGER},
+      user_remark = #{userRemark,jdbcType=VARCHAR},
+      businessman_remark = #{businessmanRemark,jdbcType=VARCHAR},
+      success = #{success,jdbcType=TINYINT},
+      addressee = #{addressee,jdbcType=VARCHAR},
+      phone = #{phone,jdbcType=VARCHAR},
+      address = #{address,jdbcType=VARCHAR}
+    where id = #{id,jdbcType=INTEGER}
+  </update>
+    <update id="confirm" parameterType="java.lang.Integer">
+        UPDATE  `order`
+        set state = "商家已确认",
+        success = 1,
+        where id = #{id,jdbcType=INTEGER}
+    </update>
+    <update id="reject" parameterType="java.lang.Integer">
+        UPDATE  `order`
+        set state = "商家已拒绝",
+        success = 0,
+        where id = #{id,jdbcType=INTEGER}
+    </update>
+    <update id="close" parameterType="java.lang.Integer">
+        UPDATE  `order`
+        set state = "用户已关闭",
+        where id = #{id,jdbcType=INTEGER}
+    </update>
+</mapper>

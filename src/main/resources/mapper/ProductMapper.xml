@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.hezhujun.shopping.dao.ProductMapper">
+    <resultMap id="BaseResultMap" type="com.hezhujun.shopping.model.Product">
+        <id column="id" property="id" jdbcType="INTEGER"/>
+        <result column="name" property="name" jdbcType="VARCHAR"/>
+        <result column="description" property="description" jdbcType="VARCHAR"/>
+        <result column="price" property="price" jdbcType="DECIMAL"/>
+        <result column="img_url" property="imgUrl" jdbcType="VARCHAR"/>
+        <association column="category_id" property="category" javaType="com.hezhujun.shopping.model.Category">
+            <id column="category_id" property="id" jdbcType="INTEGER"/>
+            <result column="category_name" property="name" jdbcType="VARCHAR"/>
+        </association>
+        <association column="repertory_id" property="repertory" javaType="com.hezhujun.shopping.model.Repertory">
+            <id column="repertory_id" property="id" jdbcType="INTEGER"/>
+            <result column="count" property="count" jdbcType="INTEGER"/>
+        </association>
+        <association column="regular_id" property="regular" javaType="com.hezhujun.shopping.model.Regular">
+            <id column="regular_id" property="id" jdbcType="INTEGER"/>
+            <result column="discount" property="discount" jdbcType="DECIMAL"/>
+        </association>
+    </resultMap>
+    <sql id="Base_Column_List">
+    product.id, product.`name`, product.description, product.price, product.img_url, product.category_id,
+    product.repertory_id, product.regular_id, category.`name` as category_name, regular.discount, repertory.count
+  </sql>
+    <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Integer">
+        select
+        <include refid="Base_Column_List"/>
+        from product
+        INNER JOIN category ON product.category_id = category.id
+        INNER JOIN regular ON product.regular_id = regular.id
+        INNER JOIN repertory ON product.repertory_id = repertory.id
+        where product.id = #{id,jdbcType=INTEGER}
+    </select>
+    <select id="count" resultType="java.lang.Integer">
+        select count(id) from product where category_id = #{categoryId,jdbcType=INTEGER}
+    </select>
+    <select id="selectByCategory" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        from product
+        INNER JOIN category ON product.category_id = category.id
+        INNER JOIN regular ON product.regular_id = regular.id
+        INNER JOIN repertory ON product.repertory_id = repertory.id
+        where category_id=#{categoryId, jdbcType=INTEGER}
+        ORDER BY product.id DESC
+        LIMIT #{offset, jdbcType=INTEGER}, #{rows, jdbcType=INTEGER}
+    </select>
+    <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer">
+    delete from product
+    where id = #{id,jdbcType=INTEGER}
+  </delete>
+    <insert id="insert" parameterType="com.hezhujun.shopping.model.Product" keyColumn="id" keyProperty="id"
+            useGeneratedKeys="true">
+    insert into product (name, description,
+      price, img_url, category_id, 
+      repertory_id, regular_id)
+    values (#{name,jdbcType=VARCHAR}, #{description,jdbcType=VARCHAR},
+      #{price,jdbcType=DECIMAL}, #{imgUrl,jdbcType=VARCHAR}, #{category.id,jdbcType=INTEGER},
+      #{repertory.id,jdbcType=INTEGER}, #{regular.id,jdbcType=INTEGER})
+  </insert>
+    <insert id="insertSelective" parameterType="com.hezhujun.shopping.model.Product" keyColumn="id" keyProperty="id"
+            useGeneratedKeys="true">
+        insert into product
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="name != null">
+                name,
+            </if>
+            <if test="description != null">
+                description,
+            </if>
+            <if test="price != null">
+                price,
+            </if>
+            <if test="imgUrl != null">
+                img_url,
+            </if>
+            <if test="category.id != null">
+                category_id,
+            </if>
+            <if test="repertory.id != null">
+                repertory_id,
+            </if>
+            <if test="regular.id != null">
+                regular_id,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="name != null">
+                #{name,jdbcType=VARCHAR},
+            </if>
+            <if test="description != null">
+                #{description,jdbcType=VARCHAR},
+            </if>
+            <if test="price != null">
+                #{price,jdbcType=DECIMAL},
+            </if>
+            <if test="imgUrl != null">
+                #{imgUrl,jdbcType=VARCHAR},
+            </if>
+            <if test="category.id != null">
+                #{category.id,jdbcType=INTEGER},
+            </if>
+            <if test="repertory.id != null">
+                #{repertory.id,jdbcType=INTEGER},
+            </if>
+            <if test="regular.id != null">
+                #{regular.id,jdbcType=INTEGER},
+            </if>
+        </trim>
+    </insert>
+    <update id="updateByPrimaryKeySelective" parameterType="com.hezhujun.shopping.model.Product">
+        update product
+        <set>
+            <if test="name != null">
+                name = #{name,jdbcType=VARCHAR},
+            </if>
+            <if test="description != null">
+                description = #{description,jdbcType=VARCHAR},
+            </if>
+            <if test="price != null">
+                price = #{price,jdbcType=DECIMAL},
+            </if>
+            <if test="imgUrl != null">
+                img_url = #{imgUrl,jdbcType=VARCHAR},
+            </if>
+            <if test="category.id != null">
+                category_id = #{category.id,jdbcType=INTEGER},
+            </if>
+            <if test="repertory.id != null">
+                repertory_id = #{repertory.id,jdbcType=INTEGER},
+            </if>
+            <if test="regular.id != null">
+                regular_id = #{regular.id,jdbcType=INTEGER},
+            </if>
+        </set>
+        where id = #{id,jdbcType=INTEGER}
+    </update>
+    <update id="updateByPrimaryKey" parameterType="com.hezhujun.shopping.model.Product">
+    update product
+    set name = #{name,jdbcType=VARCHAR},
+      description = #{description,jdbcType=VARCHAR},
+      price = #{price,jdbcType=DECIMAL},
+      img_url = #{imgUrl,jdbcType=VARCHAR},
+      category_id = #{category.id,jdbcType=INTEGER},
+      repertory_id = #{repertory.id,jdbcType=INTEGER},
+      regular_id = #{regular.id,jdbcType=INTEGER}
+    where id = #{id,jdbcType=INTEGER}
+  </update>
+</mapper>
